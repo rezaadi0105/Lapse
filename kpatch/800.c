@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 // 8.00, 8.01, 8.03
 
+#include <stddef.h>
+
 #include "types.h"
 #include "utils.h"
 
@@ -29,8 +31,8 @@ struct kexec_args {
     u64 arg5;
 };
 
-static inline void restore(struct kexec_args *uap);
-static inline void do_patch(void);
+void do_patch(void);
+void restore(struct kexec_args *uap);
 
 __attribute__((section (".text.start")))
 int kpatch(void *td, struct kexec_args *uap) {
@@ -39,11 +41,10 @@ int kpatch(void *td, struct kexec_args *uap) {
     return 0;
 }
 
-__attribute__((always_inline))
-static inline void restore(struct kexec_args *uap) {
+void restore(struct kexec_args *uap) {
     u8 *pipe = uap->arg1;
     u8 *pipebuf = uap->arg2;
-    for (int i = 0; i < 0x18; i++) {
+    for (size_t i = 0; i < 0x18; i++) {
         pipe[i] = pipebuf[i];
     }
     u64 *pktinfo_field = uap->arg3;
@@ -52,11 +53,10 @@ static inline void restore(struct kexec_args *uap) {
     *pktinfo_field2 = 0;
 }
 
-__attribute__((always_inline))
-static inline void do_patch(void) {
-    // get kernel base
-    const u64 xfast_syscall_off = 0x1c0;
-    void * const kbase = (void *)rdmsr(0xc0000082) - xfast_syscall_off;
+void do_patch(void) {
+    // offset to fast_syscall()
+    const size_t off_fast_syscall = 0x1c0;
+    void * const kbase = (void *)rdmsr(0xc0000082) - off_fast_syscall;
 
     disable_cr0_wp();
 
@@ -174,7 +174,7 @@ static inline void do_patch(void) {
     // int sys_kexec(struct thread td, struct args *uap) {
     //     asm("jmp qword ptr [rsi]");
     // }
-    const u64 sysent_11_off = 0x10fc6e0;
+    const size_t sysent_11_off = 0x10fc6e0;
     // .sy_narg = 2
     write32(kbase, sysent_11_off, 2);
     // .sy_call = gadgets['jmp qword ptr [rsi]']
