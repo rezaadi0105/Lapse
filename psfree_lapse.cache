@@ -1,6 +1,6 @@
 CACHE MANIFEST
 # v1
-# Generated on 2025-08-09 15:07:43.246082
+# Generated on 2025-08-08 07:36:55.641326
 
 CACHE:
 alert.mjs
@@ -14,21 +14,7 @@ index.html
 payload.bin
 send.mjs
 lapse.mjs
-lapse/ps4/750.mjs
-lapse/ps4/852.mjs
-lapse/ps4/850.mjs
-lapse/ps4/903.mjs
-lapse/ps4/950.mjs
-lapse/ps4/751.mjs
-lapse/ps4/700.mjs
-lapse/ps4/800.mjs
-lapse/ps4/900.mjs
-rop/ps4/750.mjs
-rop/ps4/850.mjs
-rop/ps4/950.mjs
-rop/ps4/700.mjs
-rop/ps4/800.mjs
-rop/ps4/900.mjs
+rop/900.mjs
 module/offset.mjs
 module/utils.mjs
 module/view.mjs
@@ -37,13 +23,8 @@ module/memtools.mjs
 module/chain.mjs
 module/int64.mjs
 module/mem.mjs
-kpatch/700.elf
-kpatch/950.elf
-kpatch/903.elf
+module/constants.mjs
 kpatch/900.elf
-kpatch/850.elf
-kpatch/750.elf
-kpatch/800.elf
 
 NETWORK:
 *
