@@ -67,7 +67,7 @@ const [is_ps4, version] = (() => {
     throw RangeError(`invalid config.target: ${hex(value)}`);
   }
 
-  log(`Console: PS${is_ps4 ? "4" : "5"} | Firmware: ${hex(version)}`);
+  log(`console: PS${is_ps4 ? "4" : "5"} | firmware: ${hex(version)}`);
 
   return [is_ps4, version];
 })();
@@ -106,7 +106,7 @@ const fw_config = (() => {
   } else {
     // TODO: PS5
   }
-  throw new RangeError(`unsupported console/firmware: ps${is_ps4 ? "4" : "5"}, version: ${hex(version)}`);
+  throw new RangeError(`unsupported: console: PS${is_ps4 ? "4" : "5"} | firmware: ${hex(version)}`);
 })();
 
 const pthread_offsets = fw_config.pthread_offsets;
