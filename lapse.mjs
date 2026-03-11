@@ -1590,7 +1590,7 @@ async function patch_kernel(kbase, kmem, p_ucred, restore_info) {
   // assume start of loadable segments is at offset 0x1000
   const patches = new View1(await buf, 0x1000);
   let map_size = patches.size;
-  const max_size = 0x10000000;
+  const max_size = 0x500000; // (adjust if your payload is larger)
   if (map_size > max_size) {
     die(`patch file too large (>${max_size}): ${map_size}`);
   }
