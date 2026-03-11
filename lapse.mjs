@@ -1590,7 +1590,7 @@ async function patch_kernel(kbase, kmem, p_ucred, restore_info) {
   // assume start of loadable segments is at offset 0x1000
   const patches = new View1(await buf, 0x1000);
   let map_size = patches.size;
-  const max_size = 0x10000000;
+  const max_size = 0x500000;
   if (map_size > max_size) {
     die(`patch file too large (>${max_size}): ${map_size}`);
   }
@@ -1598,7 +1598,10 @@ async function patch_kernel(kbase, kmem, p_ucred, restore_info) {
     die('patch file size is zero');
   }
   log(`kpatch size: ${map_size} bytes`);
-  map_size = (map_size + page_size) & -page_size;
+  // Round up to page size
+  map_size = (map_size + page_size - 1) & ~(page_size - 1);
+  // Ensure minimum viable size for shellcode
+  if (map_size < 0x1000) map_size = 0x1000;
 
   const prot_rw = 3;
   const prot_rx = 5;
