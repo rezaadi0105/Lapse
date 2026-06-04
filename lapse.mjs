@@ -1853,6 +1853,20 @@ export async function kexploit() {
   log(`restoring rtprio: type=${current_rtprio.type} prio=${current_rtprio.prio}`);
   pin_to_core(current_core);
   set_rtprio(current_rtprio);
+
+  // Check if it all worked
+  log("setuid(0)");
+  try {
+    if (sysi("setuid", 0) == 0) {
+      log("kernel exploit succeeded!");
+      return true;
+    }
+  } catch {
+    // Still not exploited, something failed, but it made it here...
+    die("kernel exploit failed!");
+  }
+
+  return false;
 }
 
 // KEX
