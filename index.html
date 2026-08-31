@@ -1,62 +1,70 @@
-<!-- Copyright (C) 2023-2025 anonymous
-
-This file is part of PSFree.
-
-PSFree is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-PSFree is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
--->
-<html>
+<!DOCTYPE html>
+<html lang="id">
 <head>
-<title>PSFree-Lapse v1.5.1 For PS4 7.00-9.60 By Reza A.P</title>
-<link rel="shortcut icon" href="favicon.ico"></link>
-<link rel="stylesheet" href="style.css">
-<style>
-body{background: linear-gradient(to bottom right, #011A27, #0B2430);color:white;font-size:28px;text-align:center;margin:0;overflow:hidden;}
-.info{position:relative;top:39%;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS4 Exploit FW 7.00-9.60</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            background-image: url('BG.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            background-color: #121212;
+        }
 
-<!-- Cache -->
-<script>
-if (window.applicationCache.status=='0'){window.location.replace("cache.html");}
-</script>
+        #result, #user-agent {
+            display: none;
+        }
+    </style>
 </head>
+<body>
 
-<body onload="setTimeout(webkitExploit,1500);"><!--  -->
-  <!-- Message -->
-  <div id="msgs" class="info">Running Webkit Exploit, Please Wait ...</div>
+    <div id="result"></div>
+    <div id="user-agent"></div>
 
-  <!-- Pass-Fail Status -->
-  <div class="passfail">
-    <div class="passfail-title" id="passfail-title">Pass = <span style="color:green" id=passCounter></span>&nbsp;&nbsp;:&nbsp;&nbsp;Fail = <span style="color:red" id=failCounter></span></div>
-  </div>
+    <script>
+        function processDevice() {
+            const userAgent = navigator.userAgent;
+            const isPS4 = /PlayStation 4|PS4/i.test(userAgent);
 
-  <script>
-    if (localStorage.passcount == null || localStorage.passcount == undefined) localStorage.passcount = 0;
-    if (localStorage.passCounter == null || localStorage.passCounter == undefined) {
-        passCounter.innerHTML = localStorage.passcount;
-    }
-    if (localStorage.failcount == null || localStorage.failcount == undefined) localStorage.failcount = 0;
-    if (localStorage.failCounter == null || localStorage.failCounter == undefined) {
-        failCounter.innerHTML = localStorage.failcount;
-    }
-  </script>
+            if (isPS4) {
+                const fwMatch = userAgent.match(/(?:PlayStation 4|PS4)[\s\/]+([\d\.]+)/i);
+
+                if (fwMatch && fwMatch[1]) {
+                    const firmware = parseFloat(fwMatch[1]);
+
+                    if (firmware >= 5.00 && firmware <= 6.72) {
+                        setTimeout(() => {
+                            window.location.href = "https://rezaadi0105.github.io/ps4jb/index.html";
+                        }, 1500);
+
+                    } else if (firmware >= 7.00 && firmware <= 9.60) {
+                        setTimeout(() => {
+                            window.location.href = "https://rezaadi0105.github.io/700-960/index.html";
+                        }, 1500);
+
+                    } else if (firmware >= 10.00 && firmware <= 11.02) {
+                        setTimeout(() => {
+                            window.location.href = "https://rezaadi0105.github.io/CSSFontFace/index.html";
+                        }, 1500);
+
+                    } else if (firmware >= 11.50 && firmware <= 13.00) {
+                        setTimeout(() => {
+                            window.location.href = "https://rezaadi0105.github.io/11-13/index.html";
+                        }, 1500);
+                    }
+                }
+            }
+        }
+
+        window.onload = processDevice;
+    </script>
+
 </body>
-
-<!-- Exploit -->
-<script>
-async function webkitExploit() 
-{
- await import('./alert.mjs');
-}
-</script>
 </html>
